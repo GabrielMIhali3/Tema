@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <assert.h>
+
 
 FILE *file;
+
 
 int read_int(char mesaj[]){
         // Acesta functie citeste de la tastatura un sir iar apoi veriifca daca este numar intreg
@@ -28,23 +31,23 @@ char read_char(char mesaj[], char text[]){
 
 
 int isFileEmpty() {
-    FILE *file = fopen("bank.txt", "r");
+        file = fopen("bank.txt", "r");
 
-    if (file == NULL) {
-        fprintf(stderr, "Nu s-a putut deschide fisierul\n");
-        return -1; // Returnăm -1 pentru a indica o eroare la deschiderea fișierului
-    }
+        if (file == NULL) {
+                fprintf(stderr, "Nu s-a putut deschide fisierul\n");
+                return -1; // Returnăm -1 pentru a indica o eroare la deschiderea fișierului
+        }
 
-    // Setăm indicatorul de poziție la sfârșitul fișierului
-    fseek(file, 0, SEEK_END);
+        // Setăm indicatorul de poziție la sfârșitul fișierului
+        fseek(file, 0, SEEK_END);
 
-    // Obținem poziția curentă, care va fi 0 dacă fișierul este gol
-    long file_size = ftell(file);
+        // Obținem poziția curentă, care va fi 0 dacă fișierul este gol
+        long file_size = ftell(file);
 
-    fclose(file);
+        fclose(file);
 
-    // Returnăm 1 dacă fișierul este gol, altfel returnăm 0
-    return (file_size == 1) ? 1 : 0;
+        // Returnăm 1 dacă fișierul este gol, altfel returnăm 0
+        return (file_size == 1) ? 1 : 0;
 }
 
 
@@ -88,7 +91,7 @@ int calc_sold(){
                 fscanf(file, "%d", &an); // extragem anul din fisier
                 fscanf(file, "%d", &pret); // extragem pretul di fisier
                 fscanf(file, "%s", descriere); // extragem descrierea din fisier
-
+                printf("\n%d %d %d", zi, luna, pret);
 
                 if (tip == 1)
                         sold += pret;
@@ -121,7 +124,7 @@ void adaugare_tranzactie(int tip){
         if (verif_cheltuiala(pret) || tip == 1){
                 file = fopen("bank.txt", "a"); // deschidem fisierul in modul de scriere
 
-                fprintf(file, "%d", tip); // scriem tipul in fisier
+                fprintf(file, "\n%d", tip); // scriem tipul in fisier
                 fprintf(file, "\n%d", zi); // scriem ziua in fisier
                 fprintf(file, "\n%d", luna); // scriem luna in fisier
                 fprintf(file, "\n%d", an); // scriem anul in fisier
@@ -134,7 +137,7 @@ void adaugare_tranzactie(int tip){
 }
 
 void vizualizare_tranzactii(){
-        if (isFileEmpty()){
+        if (isFileEmpty(file)){
                 printf("\nNu exista tranzactii!\n");
                 return;
         }
@@ -157,7 +160,7 @@ void vizualizare_tranzactii(){
                  else
                         printf("\n\nChetuiala:");
 
-                 printf("\nZiua: %d \nLuna: %d \nAn: %d \nPret: %d \nDescriere %s\n", zi, luna, an, pret, descriere);
+                printf("\nZi: %d \nLuna: %d \nAn: %d \nPret: %d \nDescriere: %s", zi, luna, an, pret, descriere);
         }
         fclose(file);
 }
@@ -168,13 +171,21 @@ void raport_financiar(){
                 return;
         }
 
-        int zi = read_int("Introduceti ziua: "); // citim de la tastatura
-        int luna = read_int("Introduceti luna: ");
-        int an = read_int("Introduceti anul: ");
-        int zi2 = read_int("Introduceti ziua: ");
-        int luna2 = read_int("Introduceti luna: ");
-        int an2 = read_int("Introduceti anul: ");
+        int v = 1, zi, luna, an, zi2, luna2, an2;
 
+        while (v > 0){
+                zi = read_int("Introduceti ziua: "); // citim de la tastatura
+                luna = read_int("Introduceti luna: ");
+                an = read_int("Introduceti anul: ");
+                zi2 = read_int("Introduceti ziua: ");
+                luna2 = read_int("Introduceti luna: ");
+                an2 = read_int("Introduceti anul: ");
+
+                v = comparareDate(zi, luna, an, zi2, luna2, an2);
+
+                if (v == 1)
+                        printf("\nNu se poate afisa raportul financiar pentru aceste date!\n");
+        }
         file = fopen("bank.txt", "r"); // dschidem fisierul in modul de citire
 
         int venit = 0, cheltuiala = 0;
@@ -213,10 +224,9 @@ int print_menu_add_tranzactie(){
 
         if (alege < 1 || alege > 2){
                 printf("\nNu exista acesta optiune!\n");
-                print_menu_add_tranzactie();
+                alege = print_menu_add_tranzactie();
         }
-        else
-                return alege;
+        return alege;
 }
 
 int print_main_menu(){
@@ -252,6 +262,17 @@ void main_menu(){
         }
 }
 
+
+void teste(){
+        assert(comparareDate(1, 12, 2023, 12, 12, 2023) == -1);
+        assert(comparareDate(12, 11, 2023, 12, 12, 2023) == -1);
+        assert(comparareDate(14, 12, 2023, 14, 12, 2023) == 0);
+        assert(comparareDate(1, 12, 2023, 1, 1, 2022) == 1);
+
+}
+
+
 int main(){
+        teste();
         main_menu();
 }
