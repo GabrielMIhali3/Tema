@@ -91,7 +91,6 @@ int calc_sold(){
                 fscanf(file, "%d", &an); // extragem anul din fisier
                 fscanf(file, "%d", &pret); // extragem pretul di fisier
                 fscanf(file, "%s", descriere); // extragem descrierea din fisier
-                printf("\n%d %d %d", zi, luna, pret);
 
                 if (tip == 1)
                         sold += pret;
@@ -111,18 +110,10 @@ int verif_cheltuiala(int pret){
         return 1;
 }
 
-void adaugare_tranzactie(int tip){
-        int zi = 0, luna = 0, an = 0, pret = 0;
-        char descriere[100] = "";
-
-        zi = read_int("Introduceti ziua: "); // citim de la tastatura
-        luna = read_int("Introduceti luna: ");
-        an = read_int("Introduceti anul: ");
-        pret = read_int("Introduceti suma: ");
-        read_char("Introduceti descrierea: ", descriere);
+void adaugare_tranzactie(FILE *file, int tip, int zi, int luna, int an, int pret, char descriere[]){
+        // functia adauga in fisier datele
 
         if (verif_cheltuiala(pret) || tip == 1){
-                file = fopen("bank.txt", "a"); // deschidem fisierul in modul de scriere
 
                 fprintf(file, "\n%d", tip); // scriem tipul in fisier
                 fprintf(file, "\n%d", zi); // scriem ziua in fisier
@@ -130,14 +121,35 @@ void adaugare_tranzactie(int tip){
                 fprintf(file, "\n%d", an); // scriem anul in fisier
                 fprintf(file, "\n%d", pret); // scriem pretul in fisier
                 fprintf(file, "\n%s", descriere); // scriem descrerea in fisier
-                fclose(file); // inchidem fisierul
         }
         else
                 printf("\nNu puteti adauga acesta tranzactie!\n");
 }
 
+void citire_adaugare_tranzactie(int *zi, int *luna, int *an, int *pret, char descriere[]){
+        *zi = read_int("Introduceti ziua: "); // citim de la tastatura
+        *luna = read_int("Introduceti luna: ");
+        *an = read_int("Introduceti anul: ");
+        *pret = read_int("Introduceti suma: ");
+        read_char("Introduceti descrierea: ", descriere);
+}
+
+void service_adaugare_tranzactie(int tip){
+        FILE *file = fopen("bank.txt", "a"); // descidem fisierul in modul de append
+        int zi = 0, luna = 0, an = 0, pret = 0;
+        char descriere[100] = "";
+
+        citire_adaugare_tranzactie(&zi, &luna, &an, &pret, descriere);
+        adaugare_tranzactie(file, tip, zi, luna, an, pret, descriere);
+
+        fclose(file); // inchidem fisierul
+
+
+}
+
+
 void vizualizare_tranzactii(){
-        if (isFileEmpty(file)){
+        if (isFileEmpty()){
                 printf("\nNu exista tranzactii!\n");
                 return;
         }
@@ -166,13 +178,14 @@ void vizualizare_tranzactii(){
 }
 
 void raport_financiar(){
-        if (isFileEmpty()){
+        if (isFileEmpty()){ // verificam daca exista tranzactii
                 printf("\nNu exista tranzactii!\n");
                 return;
         }
 
         int v = 1, zi, luna, an, zi2, luna2, an2;
 
+        // citim perioada din care dorim sa afisam rezumatul tranzactiilor
         while (v > 0){
                 zi = read_int("Introduceti ziua: "); // citim de la tastatura
                 luna = read_int("Introduceti luna: ");
@@ -215,6 +228,7 @@ void raport_financiar(){
         printf("\nVenit: %d\nCheltuila: %d\n", venit, cheltuiala);
 }
 
+
 int print_menu_add_tranzactie(){
         printf("\n\n1. Adaugare venit.");
         printf("\n2. Adaugare cheltuiala.");
@@ -246,7 +260,7 @@ void main_menu(){
 
         if (alege == 1){
                 int alege_tranzactie = print_menu_add_tranzactie();
-                adaugare_tranzactie(alege_tranzactie);
+                service_adaugare_tranzactie(alege_tranzactie);
 
         }
         else if (alege == 2)
